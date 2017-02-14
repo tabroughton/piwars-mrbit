@@ -3,7 +3,8 @@
     Date: 14/02/2107
     Atuhor: Tom Broughton
 
-    Intention of this script is to test the motor control from command line
+    Intention of this script is to test the motor control
+    the main function to call is motorCMD(mCMD) with below text commands
 
     Hardware:
     * GrovePi Hat on Raspberry Pi 3 (or other with Bluetooth)
@@ -21,7 +22,6 @@
 
 import grovepi
 
-
 #motor control constants
 MOTOR_CW = 0
 MOTOR_CCW = 1
@@ -31,6 +31,7 @@ MOT_B = 1
 #pin val constants
 HIGH = 1
 LOW = 0
+PWM_MAX = 255
 
 #set up motor driver pins
 motAPins = [7, 8]
@@ -40,8 +41,12 @@ motPWMPins = [5, 6]
 
 #Store the values of the current motor direction and speed
 motDirection = [MOTOR_CW, MOTOR_CW]
-motPWM = [255, 255]
-updateMotors = False
+motPWM = [PWM_MAX, PWM_MAX]
+
+#setup pinmodes
+for mot in range(0, 2):
+    for pin in range(0, 2): grovepi.pinMode(motorPins[mot][pin],"OUTPUT")
+    grovepi.pinMode(motPWMPins[mot],"OUTPUT")
 
 #define motor functions
 def motorGo(motor, direction, pwm = 0):
@@ -90,7 +95,7 @@ def motorsTurnLeft():
 def motorsSpeed(aVal):
     if aVal.isdigit():
         pwmVal = int(aVal)
-        if pwmVal >= 0 and pwmVal <= 255:
+        if pwmVal >= 0 and pwmVal <= PWM_MAX:
             motPWM[MOT_A] = pwmVal
             motPWM[MOT_B] = pwmVal
             moveMotorsAandB()
@@ -117,24 +122,3 @@ def motorCMD(mCMD):
     print "received [%s]" % mCMD
     action = mCMD.split("-")
     motorAction(action[0])() if action[0] != "PWM" else motorAction(action[0])(action[1])
-
-#setup pinmodes
-for mot in range(0, 2):
-    for pin in range(0, 2): grovepi.pinMode(motorPins[mot][pin],"OUTPUT")
-    grovepi.pinMode(motPWMPins[mot],"OUTPUT")
-
-#main loop
-while 1:
-    try:
-        #store any data from the command line input
-        btData = raw_input("Enter Motor Command: ")
-        if btData: motorCMD(btData)
-
-    except KeyboardInterrupt:
-        motorsOff();
-        break
-
-    except Exception as e:
-        print str(e)
-    	# Turn motors off
-        motorsOff()
