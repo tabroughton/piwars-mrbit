@@ -21,8 +21,8 @@ NUM_SENSORS = len(SENSOR_PINS)
 
 #can tinker with the following to obtain optimum results:
 CHARGE_TIME = 10 #us to charge the capacitors
-LEDON_PWM = 512 #reduce current over time, this val currently gives same readings as 1024
-READINGS_PER_SECOND = 5
+LEDON_PWM = 1024 #reduce current over time, this val currently gives same readings as 1024
+READINGS_PER_SECOND = 10
 READING_TIMEOUT = 1000 #us if it takes longer, assume line is black
 
 #list to store sensor values in
