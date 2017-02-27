@@ -1,6 +1,6 @@
 """
     implementation of mrBit Moto Driver over bluetooth
-    Date: 14/02/2107
+    Date: 14/02/2017
     Atuhor: Tom Broughton
 
     Hardware:
@@ -32,7 +32,7 @@ server_sock.listen(1)
 try:
     client_sock,address = server_sock.accept()
     print "Accepted connection from ",address
-    
+
 except Exception as e:
     print str(e)
     server_sock.close()

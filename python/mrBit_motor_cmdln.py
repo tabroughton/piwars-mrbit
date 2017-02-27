@@ -1,6 +1,6 @@
 """
     implementation of mrBit Motor Driver via Command line text
-    Date: 14/02/2107
+    Date: 14/02/2017
     Atuhor: Tom Broughton
 
     To test the motor control from command line

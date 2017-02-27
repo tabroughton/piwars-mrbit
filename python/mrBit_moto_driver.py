@@ -1,6 +1,6 @@
 """
     Control Motors via Grove Shield on Pi using Command line text
-    Date: 14/02/2107
+    Date: 14/02/2017
     Atuhor: Tom Broughton
 
     Intention of this script is to test the motor control
