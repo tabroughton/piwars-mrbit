@@ -3,10 +3,10 @@
     Date: 26/02/2017
     Atuhor: Tom Broughton
 
-    NOTE - THIS VERSION DOES NOT USE PWM FOR LEDON
+    NOTE - THERE IS AN ISSUE WITH THE PWM CONTROL, THIS SCRIPT IS NOT WORKING ATM, REQUESTED ADVICE.
 
     Hardware:
-    * LEDON pin connected to GPIO 21
+    * LEDON pin connected to GPIO 1(BCM 18)
     * 3V3 to rail and GND
     * Pins 22 - 29 to each IR LED/phototransitor pair
 
@@ -17,7 +17,8 @@ import wiringpi
 wiringpi.wiringPiSetup()
 
 #Set up the constants
-LEDON_PIN = 21
+LEDON_PIN = 1 #attached to pwm pin on the pi
+LEDON_PWM = 1024 #reduce current over time, this val currently gives same readings as 1024
 SENSOR_PINS = [22, 26, 23, 27, 24, 28, 25, 29]
 NUM_SENSORS = len(SENSOR_PINS)
 CHARGE_TIME = 10 #us to charge the capacitors
@@ -36,7 +37,8 @@ def initPins():
     for pin in SENSOR_PINS:
         sensorValues.append(0)
         wiringpi.pullUpDnControl(pin, wiringpi.PUD_DOWN) #ensure when low these GPIO pins are pulled down
-    wiringpi.pinMode(LEDON_PIN, wiringpi.OUTPUT)
+    wiringpi.pinMode(LEDON_PIN, wiringpi.PWM_OUTPUT)
+    wiringpi.pwmSetMode(wiringpi.PWM_MODE_BAL)
 
 """
 function: emittersOn
@@ -46,7 +48,7 @@ note: if there is nothing wired to LEDON emitters will always be on
 """
 def emittersOn():
     print("emitters on")
-    wiringpi.digitalWrite(LEDON_PIN, wiringpi.HIGH)
+    wiringpi.pwmWrite(LEDON_PIN, LEDON_PWM)
     wiringpi.delayMicroseconds(200)
 
 """
@@ -56,7 +58,7 @@ turns the LEDON pin off so that IR LEDs can't be turned on
 """
 def emittersOff():
     print("emitters off")
-    wiringpi.digitalWrite(LEDON_PIN, wiringpi.LOW)
+    wiringpi.pwmWrite(LEDON_PIN, wiringpi.LOW)
     wiringpi.delayMicroseconds(200)
 
 """
