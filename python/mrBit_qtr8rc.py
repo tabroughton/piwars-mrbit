@@ -3,9 +3,6 @@
     Date: 26/02/2017
     Atuhor: Tom Broughton
 
-    Intention of this script is to test the motor control
-    the main function to call is motorCMD(mCMD) with below text commands
-
     Hardware:
     * LEDON pin connected to GPIO 1(BCM 18)
     * 3V3 to rail and GND
