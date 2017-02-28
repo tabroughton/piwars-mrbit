@@ -34,7 +34,7 @@ LOW = 0
 PWM_MAX = 255
 
 #set up motor driver pins
-mot1Pins = [7, 8]
+mot1Pins = [8, 7]
 mot2Pins = [4, 3]
 motorPins = [mot1Pins, mot2Pins]
 motPWMPins = [5, 6]
