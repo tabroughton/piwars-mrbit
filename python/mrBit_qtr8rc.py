@@ -21,11 +21,14 @@ LEDON_PIN = 21
 SENSOR_PINS = [22, 26, 23, 27, 24, 28, 25, 29]
 NUM_SENSORS = len(SENSOR_PINS)
 CHARGE_TIME = 10 #us to charge the capacitors
-READINGS_PER_SECOND = 5
+READINGS_PER_SECOND = 1
 READING_TIMEOUT = 1000 #us if it takes longer, assume line is black
 
 #list to store sensor values in
 sensorValues = []
+calibratedMax = []
+calibratedMin = []
+lastValue = 0
 
 """
 function: initPins
@@ -35,6 +38,8 @@ sets up the GPIO pins and also ensures the correct number of items in sensors va
 def initPins():
     for pin in SENSOR_PINS:
         sensorValues.append(0)
+        calibratedMax.append(0)
+        calibratedMin.append(0)
         wiringpi.pullUpDnControl(pin, wiringpi.PUD_DOWN) #ensure when low these GPIO pins are pulled down
     wiringpi.pinMode(LEDON_PIN, wiringpi.OUTPUT)
 
@@ -71,6 +76,72 @@ def printSensorValues(values):
         print("sensor %d, reading %d" % (i, values[i]))
 
 """
+function: resetCalibrationVals
+-----------------
+resets max and min (inverse)thresholds prior to calibration
+"""
+def resetCalibrationVals():
+    for i in range(0, NUM_SENSORS):
+        calibratedMax[i] = 0
+        calibratedMin[i] = READING_TIMEOUT
+
+"""
+function: calibrateSensors
+-----------------
+Takes readings across all sensors and sets max and min readings
+typical use of this function is to call several times with delay such that
+a total of 5 seconds pass (i.e. 250 calls, with 20ms delays)
+"""
+def calibrateSensors():
+    for j in range(0, 10):
+        readSensors()
+        for i in range(0, NUM_SENSORS):
+            if calibratedMax[i] < sensorValues[i]:
+                calibratedMax[i] = sensorValues[i]
+            if calibratedMin[i] > sensorValues[i]:
+                calibratedMin[i] = sensorValues[i]
+
+def readLine():
+    global lastValue
+    readCalibrated()
+    avg = 0
+    summ = 0
+    online = False
+    for i in range(0, NUM_SENSORS):
+        val = sensorValues[i]
+        if val > 200: online = True
+        if val > 50:
+            avg += val * (i * 1000)
+            summ +=  val
+
+    if online == False:
+        if lastValue < (NUM_SENSORS-1)*1000/2:
+            return 0
+        else:
+            return (NUM_SENSORS-1)*1000
+
+    lastValue = avg/summ
+    return lastValue
+
+
+def readCalibrated():
+    readSensors()
+    print("uncalibrated readings")
+    printSensorValues(sensorValues)
+    print("calibrated readings")
+    for i in range(0, NUM_SENSORS):
+        denominator = calibratedMax[i] - calibratedMin[i]
+        val = 0
+        if denominator != 0:
+            val = (sensorValues[i] - calibratedMin[i]) * 1000 / denominator
+        if val < 0: val = 0
+        if val > 1000: val = 1000
+        sensorValues[i] = val
+
+    print("calibrated readings")
+    printSensorValues(sensorValues)
+
+"""
 function: readSensors
 -----------------
 Follows the Pololu guidance and cpp implementation of reading sensors:
@@ -102,11 +173,29 @@ def readSensors():
 initPins()
 
 try:
+    print("calibrating")
+    resetCalibrationVals()
+    emittersOn()
+    for i in range(0, 250):
+        calibrateSensors()
+        wiringpi.delay(20)
+    emittersOff
+except KeyboardInterrupt:
+    emittersOff()
+
+print("calibration complete")
+print("max vals")
+printSensorValues(calibratedMax)
+print("calibration complete")
+print("min vals")
+printSensorValues(calibratedMin)
+
+try:
     while 1:
         emittersOn()
-        readSensors()
-        emittersOff() #TODO: submit query as to why to Pololu
-        printSensorValues(sensorValues)
+        print("read line")
+        print(readLine())
+        emittersOff()
         wiringpi.delay(1000/READINGS_PER_SECOND)
 
 except KeyboardInterrupt:
