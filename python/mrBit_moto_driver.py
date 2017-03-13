@@ -98,7 +98,7 @@ def motorsTurnLeft():
     moveMotorsAandB()
     print ("turning left")
 
-def motorsSpeed(aVal):
+def changeSpeedAandB(aVal):
     if aVal.isdigit():
         pwmVal = int(aVal)
         if pwmVal >= 0 and pwmVal <= PWM_MAX:
@@ -106,6 +106,14 @@ def motorsSpeed(aVal):
             motPWM[MOT_2] = pwmVal
             moveMotorsAandB()
             print ("speed = %d" % pwmVal)
+
+def setMotorSpeed(motor, pwmVal):
+    if pwmVal > MAX_PWM or pwmVal < 0: return
+    motPWM[motor] = pwmVal
+
+def setMotorDirection(motor, direction):
+    if direction != MOTOR_CW and direction < != MOTOR_CCW: return
+    motDirection[motor] = direction
 
 def moveMotorsAandB():
     motorGo(MOT_1, motDirection[MOT_1], motPWM[MOT_1])
@@ -121,7 +129,7 @@ def motorAction(action):
         'R' : motorsTurnRight,
         'L' : motorsTurnLeft,
         'S' : motorsOff,
-        'PWM' : motorsSpeed,
+        'PWM' : changeSpeedAandB,
     }.get(action, motorInvalidCMD)
 
 def motorCMD(mCMD):
