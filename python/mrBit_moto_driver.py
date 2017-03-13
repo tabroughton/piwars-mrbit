@@ -21,10 +21,11 @@
 """
 
 import grovepi
+from time import sleep
 
 #motor control constants
-MOTOR_CW = 0
-MOTOR_CCW = 1
+MOTOR_CW = 1
+MOTOR_CCW = 0
 MOT_1 = 0
 MOT_2 = 1
 
@@ -55,9 +56,16 @@ def motorGo(motor, direction, pwm = PWM_MAX):
     grovepi.analogWrite(motPWMPins[motor], pwm)
 
 def motorStop(motor):
-    grovepi.digitalWrite(motorPins[motor][0], LOW)
-    grovepi.digitalWrite(motorPins[motor][1], LOW)
+    for pin in range(0, 2):
+        grovepi.digitalWrite(motorPins[motor][pin], LOW)
     grovepi.analogWrite(motPWMPins[motor], LOW)
+
+def motorsStopDead(ReverseTime=0.1):
+    for mot in range(0, 2):
+        motDirection[mot] = MOTOR_CCW if motDirection[mot] == MOTOR_CW else MOTOR_CW
+    moveMotorsAandB()
+    sleep(ReverseTime)
+    motorsOff()
 
 def motorsOff():
     for mot in range(0, 2): motorStop(mot)
