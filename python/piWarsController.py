@@ -4,7 +4,7 @@ from approxeng.input.asyncorebinder import ControllerResource
 from time import sleep
 import traceback
 
-controller = MrBit_Driver.MrBit_Controller(0)
+controller = mrBit_driver.MrBit_Controller(1)
 running = True
 autoStart = False
 lastLAxis = 0

@@ -54,15 +54,16 @@ class MrBit_PID:
             Output the base value of Output
             Controller direction can be DIRECT or REVERSE (see global onstants)
         """
+        self.inAuto = True
+        self.mySetpoint = Setpoint
+        self.lastInput = 0
         self.set_output(Output)
+        self.iTerm = self.myOutput
         self.sampleTime = SampleTime
         self.controller_direction = ControllerDirection
         self.set_tunings(Kp, Ki, Kd)
-        self.set_output_limits(MinLimit, MaxLimit)
-        self.mySetpoint = Setpoint
-        self.inAuto = True
+        self.set_output_limits(MinOutput, MaxOutput)
         self.lastTime = self.millis() - self.sampleTime
-        self.lastInput = 0
 
 
     def compute(self, Input):
@@ -85,15 +86,15 @@ class MrBit_PID:
         if timeChange >= self.sampleTime:
             # Compute all the working error variables
             error = self.mySetpoint - self.myInput
-            self.ITerm += (self.ki * error)
-            if self.ITerm > self.outMax:
-                self.ITerm = self.outMax
-            elif self.ITerm < self.outMin:
-                self.ITerm = self.outMin
+            self.iTerm += (self.ki * error)
+            if self.iTerm > self.outMax:
+                self.iTerm = self.outMax
+            elif self.iTerm < self.outMin:
+                self.iTerm = self.outMin
             dInput = self.myInput - self.lastInput
 
             #compute PID Output
-            output = (self.kp * error) + self.ITerm - (self.kd * dInput)
+            output = (self.kp * error) + self.iTerm - (self.kd * dInput)
             if output > self.outMax:
                 output = self.outMax
             elif output < self.outMin:
@@ -121,6 +122,7 @@ class MrBit_PID:
         self.dispKd = Kd
 
         SampleTimeInSec = self.sampleTime / 1000.0
+        self.kp = Kp
         self.ki = Ki * SampleTimeInSec
         self.kd = Kd / SampleTimeInSec
 
@@ -182,11 +184,10 @@ class MrBit_PID:
             elif self.myOutput < self.outMin:
                 self.myOutput = self.outMin
 
-            if hasattr(self, "ITerm"):
-                if self.ITerm > self.outMax:
-                    self.ITerm = self.outMax
-                elif self.ITerm < self.outMin:
-                    self.ITerm = self.outMin
+            if self.iTerm > self.outMax:
+                self.iTerm = self.outMax
+            elif self.iTerm < self.outMin:
+                vself.outMin
 
 
     def set_mode(self, mode):
@@ -203,12 +204,12 @@ class MrBit_PID:
         """ Does all the things that need to happen to ensure a bumpless transfer
             from manual to automatic mode.
         """
-        self.ITerm = self.myOutput
+        self.iTerm = self.myOutput
         self.lastInput = self.myInput
-        if self.ITerm > self.outMax:
-            self.ITerm = self.outMax
-        elif self.ITerm < self.outMin:
-            self.ITerm = self.outMin
+        if self.iTerm > self.outMax:
+            self.iTerm = self.outMax
+        elif self.iTerm < self.outMin:
+            self.iTerm = self.outMin
 
 
     def GetKp(self): return self.dispKp
@@ -216,4 +217,4 @@ class MrBit_PID:
     def GetKd(self): return self.dispKd
     def GetMode(self): return self.inAuto
     def GetDirection(self): return self.controllerDirection
-    def GetOutput(self): return self.
+    def get_output(self): return self.myOutput

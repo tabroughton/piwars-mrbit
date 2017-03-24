@@ -121,8 +121,7 @@ class MrBit_QTR_8RC:
             for i in range(0, self.NUM_SENSORS):
                 if self.calibratedMax[i] < self.sensorValues[i]:
                     self.calibratedMax[i] = self.sensorValues[i]
-                if self.calibratedMin[i] > self.sensorValues[i]
-                    and self.sensorValues[i] > 30:
+                if self.calibratedMin[i] > self.sensorValues[i] and self.sensorValues[i] > 30:
                     self.calibratedMin[i] = self.sensorValues[i]
 
 
@@ -171,8 +170,7 @@ class MrBit_QTR_8RC:
             denominator = self.calibratedMax[i] - self.calibratedMin[i]
             val = 0
             if denominator != 0:
-                val = (self.sensorValues[i] - self.calibratedMin[i])
-                        * 1000 / denominator
+                val = (self.sensorValues[i] - self.calibratedMin[i]) * 1000 / denominator
             if val < 0:
                 val = 0
             elif val > 1000:
@@ -210,8 +208,7 @@ class MrBit_QTR_8RC:
         while self.wp.micros() - startTime < self.READING_TIMEOUT:
             time = self.wp.micros() - startTime
             for i in range(0, self.NUM_SENSORS):
-                if self.wp.digitalRead(self.SENSOR_PINS[i]) == 0
-                    and time < self.sensorValues[i]:
+                if self.wp.digitalRead(self.SENSOR_PINS[i]) == 0 and time < self.sensorValues[i]:
                     self.sensorValues[i] = time
 
 

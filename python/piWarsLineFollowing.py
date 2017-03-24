@@ -1,7 +1,8 @@
 import mrBit_driver
 from time import sleep
+import traceback
 
-controller = MrBit_Driver.MrBit_Controller(0)
+controller = mrBit_driver.MrBit_Controller(0)
 while True:
     try:
         controller.driver.drive()
@@ -11,5 +12,5 @@ while True:
         break
     except Exception as e:
         controller.driver.stop()
-        print str(e)
+        traceback.print_exc()
         break

@@ -138,38 +138,38 @@ class MrBit_DS3_Driver(MrBit_Motor_Driver):
 class MrBit_Auto_Driver(MrBit_Motor_Driver):
     """ Abstract class for auto driver challenges """
 
-    def __init__(self, Setpoint,  Kp,  Ki,  Kd, InputLeft, InputRight, OutputLeft, OutputRight, ControllerDirectionLeft, ControllerDirectionRight):
-        self.leftPid = pid.MrBit_PID(Setpoint,  Kp,  Ki,  Kd, InputLeft, OutputLeft, ControllerDirectionLeft)
-        self.rightPid = pid.MrBit_PID(Setpoint,  Kp,  Ki,  Kd, InputRight, OutputRight, ControllerDirectionRight)
+    def __init__(self, Setpoint,  Kp,  Ki,  Kd, OutputLeft, OutputRight, ControllerDirectionLeft, ControllerDirectionRight):
+        self.leftPid = pid.MrBit_PID(Setpoint,  Kp,  Ki,  Kd, OutputLeft, ControllerDirectionLeft)
+        self.rightPid = pid.MrBit_PID(Setpoint,  Kp,  Ki,  Kd, OutputRight, ControllerDirectionRight)
         super(MrBit_Auto_Driver, self).__init__()
 
     def drive(self, withPid=True):
         self.set_position()
-        self.leftPid.Compute(self.position)
-        self.rightPid.Compute(self.position)
-        leftSpeed = self.leftPid.GetOutput()
-        rightSpeed = self.rightPid.GetOutput()
+        self.leftPid.compute(self.position)
+        self.rightPid.compute(self.position)
+        leftSpeed = self.leftPid.get_output()
+        rightSpeed = self.rightPid.get_output()
         super(MrBit_Auto_Driver, self).drive(leftSpeed, rightSpeed)
 
     def stop(self):
-        self.leftPid.SetMode(self.leftPid.MANUAL)
-        self.rightPid.SetMode(self.rightPid.MANUAL)
+        self.leftPid.set_mode(self.leftPid.MANUAL)
+        self.rightPid.set_mode(self.rightPid.MANUAL)
         super(MrBit_Auto_Driver, self).stop()
 
     def start(self):
         self.set_position()
-        self.leftPid.ResetOutput(self.baseSpeed)
-        self.rightPid.ResetOutput(self.baseSpeed)
-        self.leftPid.SetMode(self.leftPid.AUTOMATIC)
-        self.rightPid.SetMode(self.rightPid.AUTOMATIC)
+        self.leftPid.set_output(self.baseSpeed)
+        self.rightPid.set_output(self.baseSpeed)
+        self.leftPid.set_mode(self.leftPid.AUTOMATIC)
+        self.rightPid.set_mode(self.rightPid.AUTOMATIC)
         super(MrBit_Auto_Driver, self).start()
 
     def set_constants(self):
         Kp = input("Enter a Kp val: ")
         Ki = input("Enter a Ki val: ")
         Kd = input("Enter a Kd val: ")
-        self.leftPid.SetTunings(Kp, Ki, Kd)
-        self.rightPid.SetTunings(Kp, Ki, Kd)
+        self.leftPid.set_tunings(Kp, Ki, Kd)
+        self.rightPid.set_tunings(Kp, Ki, Kd)
 
     def set_position(self):
         raise NotImplementedError
@@ -184,8 +184,7 @@ class MrBit_Straight_Line(MrBit_Auto_Driver):
         self.setpoint = 0
         self.leftIRSensor = MrBit_IR_Distance_Sensor(16)
         self.rightIRSensor = MrBit_IR_Distance_Sensor(17)
-        self.set_position()
-        super(MrBit_Straight_Line, self).__init__(self.setpoint,  self.kp,  self.ki, self.kd, self.position, self.position, self.baseSpeed, self.baseSpeed, pid.MrBit_PID.REVERSE, pid.MrBit_PID.DIRECT)
+        super(MrBit_Straight_Line, self).__init__(self.setpoint,  self.kp,  self.ki, self.kd, self.baseSpeed, self.baseSpeed, pid.MrBit_PID.REVERSE, pid.MrBit_PID.DIRECT)
 
     def set_position(self):
         leftIRReading = self.leftIRSensor.getReading()
@@ -212,10 +211,9 @@ class MrBit_Minimal_Maze(MrBit_Auto_Driver):
             self.frontIRSensor = MrBit_IR_Distance_Sensor(17)
             leftDirection = pid.MrBit_PID.REVERSE
             rightDirection = pid.MrBit_PID.DIRECT
-        self.set_position()
-        super(MrBit_Minimal_Maze, self).__init__(self.setpoint,  self.kp,  self.ki, self.kd, self.position, self.position, self.baseSpeed, self.baseSpeed, leftDirection, rightDirection)
-        self.leftPid.SetOutputLimits(-255, 255)
-        self.rightPid.SetOutputLimits(-255, 255)
+        super(MrBit_Minimal_Maze, self).__init__(self.setpoint,  self.kp,  self.ki, self.kd, self.baseSpeed, self.baseSpeed, leftDirection, rightDirection)
+        self.leftPid.set_output_limits(-255, 255)
+        self.rightPid.set_output_limits(-255, 255)
 
     def set_position(self):
         wallReading = self.wallIRSensor.getReading()
@@ -228,17 +226,16 @@ class MrBit_Minimal_Maze(MrBit_Auto_Driver):
 class MrBit_Line_Following(MrBit_Auto_Driver):
 
     def __init__(self):
-        self.kp = 0.04
+        self.kp = 0.08
         self.ki = 0
         self.kd = 0
-        self.baseSpeed = 50
+        self.baseSpeed = 75
         self.qtr8rc = qtr.MrBit_QTR_8RC()
         self.setpoint = 3500
         self.calibrate()
-        self.set_position()
-        super(MrBit_Line_Following, self).__init__(self.setpoint,  self.kp,  self.ki,  self.kd, self.position, self.position, self.baseSpeed, self.baseSpeed, pid.MrBit_PID.DIRECT, pid.MrBit_PID.REVERSE)
-        self.leftPid.SetOutputLimits(-255, 255)
-        self.rightPid.SetOutputLimits(-255, 255)
+        super(MrBit_Line_Following, self).__init__(self.setpoint,  self.kp,  self.ki,  self.kd, self.baseSpeed, self.baseSpeed, pid.MrBit_PID.DIRECT, pid.MrBit_PID.REVERSE)
+        self.leftPid.set_output_limits(-255, 255)
+        self.rightPid.set_output_limits(-255, 255)
 
     def set_position(self):
         self.qtr8rc.emitters_on()
@@ -256,14 +253,14 @@ class MrBit_Line_Following(MrBit_Auto_Driver):
             print("calibrating")
             self.qtr8rc.initialise_calibration()
             self.qtr8rc.emitters_on()
-            for t in range(0, 2):
-                for i in range(0, 50):
-                    if t == 0:
-                        manualDriver.sharpLeft(150)
+            for t in range(0, 4):
+                for i in range(0, 10):
+                    if t % 2 ==  0:
+                        manualDriver.drive(100, 100)
                     else:
-                        manualDriver.sharpRight(150)
+                        manualDriver.drive(-100, -100)
                     self.qtr8rc.calibrate_sensors()
-                    self.qtr8rc.wp.delay(20)
+                    self.qtr8rc.wp.delay(15)
             self.qtr8rc.emitters_off
             manualDriver.stop()
 
@@ -302,12 +299,12 @@ class MrBit_Controller:
 
     def __init__(self, Mode=1):
         self.drivers = dict(MD=MrBit_DS3_Driver, SL=MrBit_Straight_Line, MM=MrBit_Minimal_Maze, LF=MrBit_Line_Following)
-        self.setMode(Mode)
+        self.set_mode(Mode)
 
     def toggle_mode(self):
         mode = MrBit_Controller.AUTOMATIC if self.mode == MrBit_Controller.MANUAL else MrBit_Controller.MANUAL
         print("mode: %d" % self.mode)
-        self.setMode(mode)
+        self.set_mode(mode)
 
     def get_mode(self):
         return self.mode
