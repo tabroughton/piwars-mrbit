@@ -45,7 +45,6 @@ class MrBit_QTR_8RC:
     def __init__(self):
         """ Initialises class constants and variables - pins defined here.
         """
-
         self.wp = wp
         self.wp.wiringPiSetup()
 
@@ -71,7 +70,8 @@ class MrBit_QTR_8RC:
             self.calibratedMax.append(0)
             self.calibratedMin.append(0)
             self.wp.pullUpDnControl(pin, self.wp.PUD_DOWN)
-        self.wp.pinMode(self.LEDON_PIN, self.wp.OUTPUT)
+        self.wp.pullUpDnControl(self.LEDON_PIN, self.wp.OUTPUT)
+        self.wp.pinMode(self.LEDON_PIN, self.wp.PUD_DOWN)
 
 
     def emitters_on(self):
@@ -93,8 +93,11 @@ class MrBit_QTR_8RC:
 
 
     def print_sensor_values(self, values):
-        """ Params: values - a list of sensor values to print
+        """
             Prints out the sensor and it's current recorded reading.
+
+            :param values:
+                A list of readings to print.
         """
         for i in range(0, self.NUM_SENSORS):
             print("sensor %d, reading %d" % (i, values[i]))
@@ -163,8 +166,8 @@ class MrBit_QTR_8RC:
 
         self.read_sensors()
 
-        print("uncalibrated readings")
-        self.print_sensor_values(self.sensorValues)
+        #print("uncalibrated readings")
+        #self.print_sensor_values(self.sensorValues)
 
         for i in range(0, self.NUM_SENSORS):
             denominator = self.calibratedMax[i] - self.calibratedMin[i]
@@ -177,8 +180,8 @@ class MrBit_QTR_8RC:
                 val = 1000
             self.sensorValues[i] = val
 
-        print("calibrated readings")
-        self.print_sensor_values(self.sensorValues)
+        #print("calibrated readings")
+        #self.print_sensor_values(self.sensorValues)
 
 
     def read_sensors(self):

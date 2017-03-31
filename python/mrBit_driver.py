@@ -231,6 +231,7 @@ class MrBit_Auto_Driver(MrBit_Motor_Driver):
         self.set_position()
         self.leftPid.compute(self.position)
         self.rightPid.compute(self.position)
+        print("senging into pid: %d" % self.position)
         leftSpeed = self.leftPid.get_output()
         rightSpeed = self.rightPid.get_output()
         super(MrBit_Auto_Driver, self).drive(leftSpeed, rightSpeed)
@@ -239,13 +240,16 @@ class MrBit_Auto_Driver(MrBit_Motor_Driver):
         """ Called to stop the PID and the motors of Mr. Bit, typically used
             when switching from automatic driving to manual.
         """
+        print("stopping driver")
         self.leftPid.set_mode(self.leftPid.MANUAL)
         self.rightPid.set_mode(self.rightPid.MANUAL)
         super(MrBit_Auto_Driver, self).stop()
 
     def start(self):
         """ Starts the auto driver, typically used when switching from manual
-            driving to automatic."""
+            driving to automatic.
+        """
+        print("starting driver")
         self.set_position()
         self.leftPid.set_output(self.baseSpeed)
         self.rightPid.set_output(self.baseSpeed)
@@ -330,17 +334,17 @@ class MrBit_Line_Following(MrBit_Auto_Driver):
         """ Creates an instance of Line Following, sets the constants for the PID
             controllers and creates instances of required sensors.
         """
-        self.kp = 0.1
+        self.kp = 0.06
         self.ki = 0
-        self.kd = 0
+        self.kd = 0.0005
         self.baseSpeed = 50
         self.qtr8rc = qtr.MrBit_QTR_8RC()
         self.setpoint = 3500
         self.calibrate()
         self.set_position()
         super(MrBit_Line_Following, self).__init__(self.setpoint,  self.kp,  self.ki,  self.kd, self.position, self.baseSpeed, self.baseSpeed, pid.MrBit_PID.DIRECT, pid.MrBit_PID.REVERSE)
-        self.leftPid.set_output_limits(-255, 255)
-        self.rightPid.set_output_limits(-255, 255)
+        self.leftPid.set_output_limits(-150, 150)
+        self.rightPid.set_output_limits(-150, 150)
 
     def set_position(self):
         """ Determins current position of Mr. Bit to send to the PID controllers.
@@ -355,22 +359,18 @@ class MrBit_Line_Following(MrBit_Auto_Driver):
             and takes a reading.  Readings displayed and need to be accepted
             by user before continuing, if not accepted Mr Bit repeats calibration.
         """
-        manualDriver = MrBit_Motor_Driver()
+
         approveCal = False
         while not approveCal:
             print("calibrating")
             self.qtr8rc.initialise_calibration()
             self.qtr8rc.emitters_on()
-            for t in range(0, 4):
-                for i in range(0, 10):
-                    if t % 2 ==  0:
-                        manualDriver.drive(100, -100)
-                    else:
-                        manualDriver.drive(-100, 100)
-                    self.qtr8rc.calibrate_sensors()
-                    self.qtr8rc.wp.delay(15)
+
+            for i in range(0, 150):
+                self.qtr8rc.calibrate_sensors()
+                self.qtr8rc.wp.delay(20)
             self.qtr8rc.emitters_off
-            manualDriver.stop()
+
 
             print("calibration complete")
             print("max vals")
@@ -380,7 +380,7 @@ class MrBit_Line_Following(MrBit_Auto_Driver):
             self.qtr8rc.print_sensor_values(self.qtr8rc.calibratedMin)
             approved = raw_input("happy with calibrtion (Y/n)? ")
             if approved == "Y": approveCal = True
-        del manualDriver
+
 
     def stop(self):
         """ Ensures the QTR emitters are turned off.

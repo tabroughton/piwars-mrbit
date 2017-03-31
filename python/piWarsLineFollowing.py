@@ -6,7 +6,7 @@ controller = mrBit_driver.MrBit_Controller(0)
 while True:
     try:
         controller.driver.drive()
-        sleep(0.02)
+        sleep(0.03)
     except KeyboardInterrupt:
         controller.driver.stop()
         break

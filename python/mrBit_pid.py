@@ -112,7 +112,9 @@ class MrBit_PID:
                 The current position.
         """
         self.myInput = Input
-        if not self.inAuto: return False
+        if not self.inAuto:
+            print("not in auto")
+            return False
         now = self.millis()
         timeChange = (now - self.lastTime)
         if timeChange >= self.sampleTime:
@@ -256,10 +258,10 @@ class MrBit_PID:
             :param Mode:
                 Can be AUTOMATIC or MANUAL
         """
-        if Mode == MrBit_PID.AUTOMATIC and self.inAuto == False:
-            #self.reinitialse()
+        if Mode == MrBit_PID.AUTOMATIC:
             self.inAuto = True
-        else:
+            #self.reinitialse()
+        elif Mode == MrBit_PID.MANUAL:
             self.inAuto = False
 
 

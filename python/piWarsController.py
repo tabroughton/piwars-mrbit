@@ -3,10 +3,10 @@ from approxeng.input.dualshock3 import DualShock3, CONTROLLER_NAMES
 from approxeng.input.asyncorebinder import ControllerResource
 from time import sleep
 import traceback
-import mrBit_gripper_pipper
+#import mrBit_gripper_pipper
 
 controller = mrBit_driver.MrBit_Controller(1)
-gripperPipper = mrBit_gripper_pipper.MrBit_Gripper_Pipper()
+#gripperPipper = mrBit_gripper_pipper.MrBit_Gripper_Pipper()
 running = True
 autoStart = False
 lastLAxis = 0
@@ -61,7 +61,7 @@ with ControllerResource(controller=DualShock3(dead_zone=0.1, hot_zone=0.2), devi
                         gripperPipper.release()
                 elif mode == controller.AUTOMATIC:
                     if autoStart: controller.driver.drive()
-                    sleep(0.05)
+                    sleep(0.03)
         except KeyboardInterrupt:
             #driver.stop()
             break
