@@ -31,6 +31,7 @@
 import time
 
 class MrBit_PID:
+    """A library to control output via PID"""
     AUTOMATIC = 1
     MANUAL = 0
     DIRECT = 0
@@ -42,20 +43,48 @@ class MrBit_PID:
         return int(round(time.time() * 1000))
 
 
-    def __init__(self, Setpoint,  Kp,  Ki,  Kd, Output,
+    def __init__(self, Setpoint,  Kp,  Ki,  Kd, Input, Output,
                     ControllerDirection=0,
-                    SampleTime=100,
+                    SampleTime=30,
                     MinOutput=0,
                     MaxOutput=255):
-        """ The parameters specified here are those for for which we can't set up
-            reliable defaults, so we need to have the user set them.
-            Kp, Ki, Kd are PID Constants
-            Setpoint is the target and Input is current position
-            Output the base value of Output
-            Controller direction can be DIRECT or REVERSE (see global onstants)
+        """ Creates an instance of the PID.
+
+            :param Setpoint:
+                Is the position where Mr Bit should be moved to.
+
+            :param Kp:
+                The proportional constant used by the PID controller.
+
+            :param Ki:
+                The integral constant used by the PID controller.
+
+            :param Kd:
+                The derivitive constant used by the PID controller.
+
+            :param Input:
+                The inital input for the PID controller.
+
+            :param Output:
+                The inital and desired output from the PID controller.
+
+            :param ControllerDirection:
+                Can be either DIRECT (a +ve/-ve input results in +ve/-ve output)
+                or REVERSE (a +ve/-ve input results in -ve/+ve output).
+
+            :param SampleTime:
+                The time in milliseconds a new output value should be calculated.
+
+            :param MinOutput:
+                The minimum output from the PID.
+
+            :param MaxOutput:
+                The maximimum output from the PID.
+
         """
         self.inAuto = True
         self.mySetpoint = Setpoint
+        self.myInput = Input
         self.lastInput = 0
         self.set_output(Output)
         self.iTerm = self.myOutput
@@ -77,7 +106,10 @@ class MrBit_PID:
             Parameter Input = the current position from sensor readings.
             Returns true when the output is computed false when nothing has been
             done. Accessing new values from the pid comes from myOuput - Use
-            get_output()
+            get_output().
+
+            :param Input:
+                The current position.
         """
         self.myInput = Input
         if not self.inAuto: return False
@@ -115,6 +147,16 @@ class MrBit_PID:
             adjusted. It's called automatically from the constructor, but tunings
             can also be adjusted on the fly during normal operation (for example)
             when detecting cliff edges on sensor readings.
+
+            :param Kp:
+                The proportional constant used by the PID controller.
+
+            :param Ki:
+                The integral constant used by the PID controller.
+
+            :param Kd:
+                The derivitive constant used by the PID controller.
+
         """
         if Kp<0 or Ki<0 or Kd<0: return
         self.dispKp = Kp
@@ -140,6 +182,9 @@ class MrBit_PID:
             increase the output when we should be decreasing.  This is managed
             via constructor and set tunings but when updating the direction we
             need to make sure the right constants are updated.
+
+            :param ControllerDirection:
+                The new controller direction, can be DIRECT or REVERSE.
         """
         if self.inAuto and self.controllerDirection != ControllerDirection:
             self.kp = -self.kp
@@ -152,6 +197,9 @@ class MrBit_PID:
         """ updates the period, in Milliseconds, at which the calculation is
             performed only used if sampleTime is already set and not needing
             resetting.
+
+            :param NewSampleTime:
+                The sample time to update to in milliseconds.
         """
         if NewSampleTime > 0:
             ratio  = NewSampleTime / self.sampleTime
@@ -161,10 +209,14 @@ class MrBit_PID:
 
 
     def set_output(self, Output):
-        """ manually set the output if needing to change (eg. speed of a motor)
+        """ Manually set the output if needing to change (eg. speed of a motor)
             during operation.
+
+            :param Output:
+                The new output for the PID.
         """
         self.myOutput = Output
+        #self.reinitialse()
 
 
     def set_output_limits(self, MinLimit, MaxLimit):
@@ -173,6 +225,12 @@ class MrBit_PID:
             in the Library are 255 max and 0, to match that of the PWM we are
             typically using (in Arduino and GrovePi+) cases for Mr Bit change.
             If using wiringpi you may want to set these limits to 1023.
+
+            :param MinLimit:
+                The value for the minimum output from the PID controller.
+
+            :param MaxLimit
+                The value for the maximimum output from thr PID controller.
         """
         if MinLimit >= MaxLimit: return
         self.outMin = MinLimit
@@ -190,19 +248,24 @@ class MrBit_PID:
                 vself.outMin
 
 
-    def set_mode(self, mode):
+    def set_mode(self, Mode):
         """ Allows the controller Mode to be set to manual (0) or Automatic
             (non-zero) - when the transition from manual to auto occurs,
             the controller is automatically initialized.
+
+            :param Mode:
+                Can be AUTOMATIC or MANUAL
         """
-        if mode == MrBit_PID.AUTOMATIC and self.inAuto == False:
-            self.reinitialse()
-        self.inAuto = mode
+        if Mode == MrBit_PID.AUTOMATIC and self.inAuto == False:
+            #self.reinitialse()
+            self.inAuto = True
+        else:
+            self.inAuto = False
 
 
     def reinitialse(self):
         """ Does all the things that need to happen to ensure a bumpless transfer
-            from manual to automatic mode.
+            from manual to automatic mode or when manually altering the output.
         """
         self.iTerm = self.myOutput
         self.lastInput = self.myInput
